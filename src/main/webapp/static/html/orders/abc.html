@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>abc</title>
+  <link rel="stylesheet" href="/static/js/layui/css/layui.css" media="all">
+</head>
+<body>
+<form  class="layui-form" id="form1">
+    <div class="layui-form-item" style="margin-top: 10px;margin-left: 10px;">
+        <div class="layui-input-inline">
+            <input type="text" name="gname" id="gname" lay-verify="required" placeholder="输入姓名查询" autocomplete="off" class="layui-input">
+        </div>
+        <div class="layui-input-inline">
+            <input type="text" name="phone" id="phone" lay-verify="required" placeholder="输入电话查询" autocomplete="off" class="layui-input">
+        </div>
+        <div>
+            <button id="find"  class="layui-btn" type="button" lay-filter="find"><i class="layui-icon">&#xe615;</i></button>
+        </div>
+    </div>
+</form>
+<table id="demo" lay-filter="test"></table>
+
+<script src="/static/js/layui/layui.js"></script>
+<script>
+    var gukejilu = "";
+    layui.use('table', function(){
+        var table = layui.table;
+
+        //第一个实例
+        table.render({
+            elem: '#demo'
+            ,height: 312
+            ,url: '../order/orderss' //数据接口
+            ,defaultToolbar: []
+            ,limits:[5,10,15]
+            ,limit:5
+            ,page: true //开启分页
+            ,id : 'gukejilu'
+            ,cols: [[ //表头
+                {type: 'checkbox', fixed: 'left'}
+                ,{field:'gid', title:'编号'}
+                ,{field:'gname', title:'姓名', edit: 'text' }
+                ,{field:'gcard', title:'身份证', edit: 'text'}
+                ,{field:'phone', title:'电话号码',edit: 'text'}
+                ,{field:'Cause', title:'事由',edit: 'text'}
+                ,{field:'Remarks', title:'备注', edit: 'text'}
+            ]]
+
+            ,parseData: function (rs) {//数据格式解析
+                if (rs.code == 200) {
+                    return {
+                        "code": rs.code,
+                        "msg": rs.msg,
+                        "count": rs.data.total,
+                        "data": rs.data.list
+                    }
+                }
+
+            },
+            response: {	// 设置响应码
+                statusCode: 200 //规定成功的状态码，默认：0
+            }
+        });
+    });
+    //搜索
+    $("#find").click(function(){
+        table.reload('gukejilu', {
+            where:{
+                gname:$("#gname").val(),
+                phone:$("#phone").val()
+            }
+        });
+    });
+</script>
+</body>
+</html>

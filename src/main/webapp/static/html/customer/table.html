@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Layui</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="/static/js/layui/css/layui.css"  media="all">
+</head>
+<body>
+ <form  class="layui-form" id="form1">
+ 	<div class="layui-form-item" style="margin-top: 10px;margin-left: 10px;">
+	    <div class="layui-input-inline">
+	      <input type="text" name="phone" id="phone" lay-verify="required" placeholder="根据手机号码查找" autocomplete="off" class="layui-input">
+		</div>
+		<div class="layui-input-inline">
+	      <input type="text" name="name" id="name" lay-verify="required" placeholder="根据姓名查找" autocomplete="off" class="layui-input">
+		</div>
+		<div>    
+		  	 <button id="find"  class="layui-btn" type="button" lay-filter="find"><i class="layui-icon">&#xe615;</i></button>
+		</div>
+	</div>
+ </form>
+<table class="layui-hide" id="test" lay-filter="test"></table>
+ 
+<script type="text/html" id="toolbarDemo">
+  <div class="layui-btn-container">
+    <button class="layui-btn layui-btn-sm" lay-event="upd">修改</button>
+	<button class="layui-btn layui-btn-sm" id="excelUpload" lay-event="excelUpload"><i class="layui-icon layui-icon-upload">Excel导入</i></button>
+	<button id="checkupload" style="background-color:#666666; display:none;"></button>  
+  </div>
+</script>
+ 
+<script src="/static/js/layui/layui.js" charset="utf-8"></script>
+<script>
+var customer = "";
+layui.use(['table','layer','form','jquery'], function(){
+  var table = layui.table
+  ,layer = layui.layer
+  ,$ = layui.jquery
+  ,form=layui.form;
+  table.render({
+    elem: '#test'
+    ,height: 'full'
+    ,url:'/customer/selectList'
+    ,method:'post'
+    ,toolbar: '#toolbarDemo'
+	  ,defaultToolbar: []
+	  ,limits:[5,10,15]
+	  ,limit:5
+    ,title: '用户数据表'
+    ,cellMinWidth: 80
+    ,cols: [[
+      {type: 'checkbox', fixed: 'left'}
+      ,{field:'id', title:'ID'}
+      ,{field:'name', title:'姓名', edit: 'text'}
+      ,{field:'createtime', title:'创建时间',templet: "<div>{{layui.util.toDateString(d.createtime,'yyyy-MM-dd HH:mm:ss')}}</div>"}
+      ,{field:'idcard', title:'身份证', edit: 'text'}
+      ,{field:'car', title:'车牌号'}
+      ,{field:'sex', title:'性别'}
+      ,{field:'phone', title:'电话'}
+    ]]
+    ,page: true
+    ,id: 'customer'
+	  ,parseData: function (rs) {//数据格式解析
+		  if (rs.code == 200) {
+			  return {
+				  "code": rs.code,
+				  "msg": rs.msg,
+				  "count": rs.data.total,
+				  "data": rs.data.list
+			  }
+		  }
+
+	  },
+	  response: {	// 设置响应码
+		  statusCode: 200 //规定成功的状态码，默认：0
+	  }
+  });
+	//搜索
+  $("#find").click(function(){
+       table.reload('customer', {
+      	 where:{
+			 phone:$("#phone").val(),
+      		name:$("#name").val()
+      	 }
+       });
+  });
+  //工具栏事件
+  table.on('toolbar(test)', function(obj){
+    var checkStatus = table.checkStatus(obj.config.id);
+    switch(obj.event){
+      case 'upd':
+       var data = checkStatus.data;
+       customer = data;
+       if(data.length=='1'){
+    	   layer.open({
+  	         type: 2,
+  	         skin: 'layui-layer-demo', //样式类名
+  	         title: '修改客户信息',
+  	         closeBtn: 1, //不显示关闭按钮
+  	         anim: 2,
+  	         maxmin: true,
+  	         area: ['30%', '50%'],
+  	         shadeClose: true, //开启遮罩关闭
+  	         content: '/customer/upcustomer'
+  	     });
+    	 return false;
+       }
+      break;
+    };
+  });
+});
+
+
+function status(d){
+	var str="";
+	if(d.status=='0'){
+		str="刚下单";
+	}
+	if(d.status=='1'){
+		str="已接单";
+	}
+	if(d.status=='2'){
+		str="已到达正在修";
+	}
+	if(d.status=='3'){
+		str="已完成";
+	}
+	if(d.status=='4'){
+		str="已评价";
+	}
+	return str;
+}
+</script>
+
+</body>
+</html>
